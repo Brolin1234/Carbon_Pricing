@@ -1,0 +1,383 @@
+---
+title: "Pricing Carbon, Powering Change: RGGI’s Impact on Renewable Generation vs. ERCOT"
+author: "Brolin O'Connell and Matthew Bowman"
+date: "2025-04-02"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    df_print: paged
+    keep_tex: true
+    highlight: tango
+  word_document:
+    toc: true
+    toc_depth: '3'
+geometry: margin=1in
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE)
+```
+
+```{r}
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(broom)
+library(modelsummary)
+library(visreg)
+library(emmeans)
+library(knitr)
+library(kableExtra)
+library(scales)
+```
+
+
+## Abstract
+
+This paper investigates the impact of carbon permit pricing under the Regional Greenhouse Gas Initiative (RGGI) on renewable energy generation, using a multiple linear regression lagged model framework to attempt to quantify the relationship between permit price, renewable share, and total renewable generation. By incorporating ERCOT;a large, deregulated electricity market without carbon pricing—into the analysis as our control observation, we assess the extent to which carbon pricing alone explains renewable energy deployment. The findings confirm that RGGI permit prices are significantly associated with increased renewable generation, supporting traditional economic theory that externality senesative pricing structures can influence market behavior. However, ERCOT is consistently producing higher renewable share despite the absence of carbon pricing highlights the importance of additional structural factors such as geographic resource advantages, market liberalization, and strategic transmission investment. These results underscore the need for a more advanced policy strategy to accelerate the transition to a low-carbon energy system.
+
+
+## Introduction & Research Question
+
+
+This paper examines the relationship between carbon permit prices in the Regional Greenhouse Gas Initiative (RGGI) states and electricity generation patterns, while comparing these patterns with the Electric Reliability Council of Texas (ERCOT) system as a contemporaneous control. As states and regions implement varying approaches to carbon pricing and electricity market structure, understanding the resulting differences in generation mix, emissions intensity, and system reliability becomes increasingly important for policymakers and market participants (Environmental Defense Fund, 2022; Yan, 2021).
+
+RGGI, is the first mandatory, market-based cap-and-trade program in the United States focused on reducing CO₂ emissions from the power sector (RGGI, Inc., 2021). The program has been shown to not only reduce overall emissions but also raise revenue for reinvestment in more energy efficiency and renewable projects (Analysis Group, 2011; Massachusetts Government). Since RGGI spans multiple states and transmission organizations, we utilize ISO New England (ISO-NE) generation data as a proxy for RGGI renewable generation, this is de to coverage, accessibility, and significant overlap with core RGGI member states as well as cela formatted data and complete datasets (ISO New England Inc.).
+
+By comparing RGGI outcomes with those of ERCOT, this study attempts to isolate the potential causal influence of permit pricing on renewable energy deployment.
+
+
+## Data & Methodology
+
+We utilize quarterly RGGI auction clearing prices from September 2011 to March 2025, hourly ERCOT generation data by resource type, and detailed market data from NE-ISO. These sources provide a full picture of electricity generation patterns through time series data and carbon permit dynamics. Summary statistics, detailed descriptions, and methodological challenges, such as integrating PJM data and accounting for confounding variables, are provided in the appendix (see Appendix A).
+
+Model Specification
+We estimate the following multiple linear lagged regression model to evaluate the impact of RGGI permit prices on renewable generation controlling for time dependant componenets:
+
+$$
+\widehat{\text{RGGI Renewable Generation}}_t = \beta_0 + \beta_1 \cdot \text{Permit Price}_{t-1} + \beta_2 \cdot \text{Renewable Share}_t
+$$
+ 
+where $Y_t$ is renewable generation at time $t$, $\text{Permit Price}_{t-1}$ is the lagged permit price, and $\text{Renewable Share}_t$ is a contemporaneous control variable. The lagged permit price controls for delayed effects and reduces random correlation due to correlated or cointegrated trends.
+
+```{r}
+Final_data_energy <- read_csv('/Users/brolinoconnell/Desktop/CSU/Spring2025/Energy Econ/Final_data_energy.csv')
+Final_data_energy <- Final_data_energy %>%
+  arrange(Date) %>%
+  mutate(RGGI_Permit_Price_Lag1 = lag(RGGI_Permit_Price, 1))
+model_lag <- lm(RGGI_Renewable_Generation ~ RGGI_Permit_Price_Lag1 + RGGI_Renewable_Share, data = Final_data_energy)
+```
+
+
+## Results
+
+The model was statistically significant, $F(2, 54) = 96.87$, $p < 2.2 \times 10^{-16}$, explaining 78.2% of the variance in renewable generation ($R^2 = 0.782$). For each one-dollar increase in lagged RGGI permit price, renewable generation increased by an estimated 12,300 MWh ($\beta = 12{,}300$, $p = 0.002$), controlling for renewable share. Renewable share was also a strong predictor, with a one-unit increase associated with a 5.18 million MWh increase ($\beta = 5{,}176{,}292$, $p < 2 \times 10^{-16}$). Full regression results are included in Appendix B.
+
+```{r}
+Final_data_energy$Renewable_Gen_Million <- Final_data_energy$RGGI_Renewable_Generation / 1e6
+model_mil <- lm(Renewable_Gen_Million ~ RGGI_Permit_Price + RGGI_Renewable_Share, data = Final_data_energy)
+par(mar = c(5, 6, 5, 2))
+visreg(model_mil, "RGGI_Permit_Price", overlay = TRUE, partial = TRUE, rug = TRUE,
+       line.par = list(col = "blue", lwd = 2), fill.par = list(col = "lightblue"),
+       xlab = "RGGI Permit Price ($)", ylab = "Predicted Renewable Generation (Millions of MWh)")
+title(main = "Effect of Permit Price on Renewable Generation", adj = 0, line = 3.5, cex.main = 1.3)
+```
+
+```{r}
+Final_data_energy$Renewable_Share_Percent <- Final_data_energy$RGGI_Renewable_Share * 100
+model_percent <- lm(Renewable_Share_Percent ~ RGGI_Permit_Price + RGGI_Total_Generation, data = Final_data_energy)
+par(mar = c(5, 6, 5, 2))
+visreg(model_percent, "RGGI_Permit_Price", overlay = TRUE, partial = TRUE, rug = TRUE,
+       line.par = list(col = "black", lwd = 2), fill.par = list(col = "lightgreen"),
+       xlab = "RGGI Permit Price ($)", ylab = "RGGI Renewable Share (%)")
+title(main = "Partial Effect of Permit Price on Renewable Share", adj = 0, line = 3.5, cex.main = 1.3)
+```
+The above figures illustrate the effects more clearly and predictive power of Permit price effect on renewable generationa nd share respectivlty. 
+
+## Discussion & Conclusion
+
+Our statistical analysis confirms that RGGI permit prices are positively associated with renewable generation, supporting the claim of effectiveness for carbon pricing systems in providing incentive for cleaner energy production (Environmental Defense Fund, 2022; Yan, 2021). However, ERCOT’s higher renewable share despite no carbon pricing—suggests that structural factors like infrastructure and geolocation are critical drivers for overall generation outside of applied pricing matrix creations, like a cap and trade.  (Analysis Group, 2011; see Appendix C for detailed comparison). A control model using ERCOT data found no significant relationship between RGGI permit prices and ERCOT renewable generation, validating our main findings (see Appendix B). These results indicate that while carbon pricing is overal effective, a more sophisticated approach combining pricing with institutional reforms and strategic investment is essential for de-carbonization. Pricing alone may never reach the desired effect unless compounded over a extended period of time, therefore to speed up the rate of de-carbonization more must be applied rahther than jsut eoncomcis pricing theory methods to ensure the growth rate of clean energy is exponentiated enough to meet goals. 
+
+\newpage
+\vspace{1cm}
+
+## Appendix
+
+# Appendix A: Data Details and Summary Statistics
+Data Sources and Methodological Challenges
+RGGI: Quarterly auction clearing prices from September 2011 to March 2025.
+
+ERCOT: Hourly generation data by resource type.
+
+NE-ISO: Detailed market data. Challenges included integrating PJM data due to partial RGGI overlap causing a concern fir over fitting in a model with no coross validation etc.. There also is an issue controlling for confounders like gas prices and weather, addressed via statistical methods and AI-assisted data processing. Important to note AI was **only** used to clean data for NA values and repetitions and was also used to enhance the visuals of graphs, not for any idea generation or methodological decisions like choice of statstical tools/models in this paper. 
+
+Summary Statistics for RGGI Clearing Prices
+
+```{r}
+Permit_price_data <- read_csv('/Users/brolinoconnell/Desktop/CSU/Spring2025/Energy Econ/RGGI_Clearing_Prices.csv')
+price_summary <- summary(Permit_price_data$`Clearing Price`)
+price_summary_df <- data.frame(Statistic = names(price_summary), Value = dollar(round(as.numeric(price_summary), 2)))
+kable(price_summary_df, caption = "Table A1: Summary Statistics for RGGI Clearing Prices (USD)", col.names = c("Statistic", "Value")) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+Plot of Permit Prices Over Time
+
+```{r}
+Permit_price_data$Date <- as.Date(Permit_price_data$Date)
+ggplot(Permit_price_data, aes(x = Date, y = `Clearing Price`)) +
+  geom_line(color = "blue", size = 1) +
+  geom_point(color = "darkred", size = 2) +
+  labs(title = "RGGI Clearing Prices Over Time", x = "Auction Date", y = "Clearing Price (USD)") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"), axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Summary Statistics for ERCOT Generation
+
+```{r}
+ERCOT_gen_data <- read_csv('/Users/brolinoconnell/Desktop/CSU/Spring2025/Energy Econ/ERCOT_gen_data.csv')
+summary_stats <- ERCOT_gen_data %>%
+  group_by(Source) %>%
+  summarise(Count = n(), Mean = mean(`Energy (GWh)`, na.rm = TRUE), SD = sd(`Energy (GWh)`, na.rm = TRUE),
+            Min = min(`Energy (GWh)`, na.rm = TRUE), Q1 = quantile(`Energy (GWh)`, 0.25, na.rm = TRUE),
+            Median = median(`Energy (GWh)`, na.rm = TRUE), Q3 = quantile(`Energy (GWh)`, 0.75, na.rm = TRUE),
+            Max = max(`Energy (GWh)`, na.rm = TRUE))
+summary_stats_formatted <- summary_stats %>%
+  mutate(Mean = comma(round(Mean, 0)), SD = comma(round(SD, 0)), Min = comma(Min), Q1 = comma(Q1),
+         Median = comma(Median), Q3 = comma(Q3), Max = comma(Max))
+kable(summary_stats_formatted, caption = "Table A2: Summary Statistics for ERCOT Generation by Source",
+      col.names = c("Source", "Count", "Mean (GWh)", "SD", "Min", "Q1", "Median", "Q3", "Max")) %>%
+  kable_styling(full_width = FALSE, position = "center", latex_options = "striped")
+```
+
+Plot for ERCOT Generation by Fuel Type
+
+```{r, fig.height=4.5, fig.width=7.5, fig.align='center', fig.cap="Figure A1: ERCOT Generation by Fuel Type Over Time"}
+ERCOT_gen_data$Date <- as.Date(paste(ERCOT_gen_data$Year, ERCOT_gen_data$Month, "01", sep = "-"), format = "%Y-%b-%d")
+ggplot(ERCOT_gen_data, aes(x = Date, y = `Energy (GWh)`, color = Source)) +
+  geom_line(size = 1) +
+  labs(
+    title = "ERCOT Generation by Fuel Type Over Time",
+    x = "Date",
+    y = "Generation (GWh)",
+    color = "Fuel Type"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = c(
+    "Wind" = "skyblue",
+    "Solar" = "gold",
+    "Hydro" = "navy",
+    "Coal" = "black",
+    "Gas" = "darkred",
+    "Nuclear" = "mediumorchid",
+    "Oil" = "gray40",
+    "Biomass" = "forestgreen",
+    "Other" = "brown"
+  ))
+```
+
+Plot for NE ISO Generation by type 
+```{r, fig.height=4.5, fig.width=7.5, fig.align='center', fig.cap="Figure A2: RGGI Renewable Fuel Generation Over Time"}
+
+RGGI_ISO_data <- read_csv('/Users/brolinoconnell/Desktop/CSU/Spring2025/Energy Econ/RGGI_ISO_data.csv')
+
+# Rename "LANDFILL GAS" for consistency
+RGGI_ISO_data <- RGGI_ISO_data %>%
+  rename(`LANDFILL_GAS` = `LANDFILL GAS`)
+
+# Reshape the renewable columns to long format
+RGGI_renewables_long <- RGGI_ISO_data %>%
+  select(Month, WIND, SOLAR, HYDRO, WOOD, LANDFILL_GAS, METHANE, REFUSE) %>%
+  pivot_longer(
+    cols = -Month,
+    names_to = "Fuel_Type",
+    values_to = "Generation_MWh"
+  )
+
+# Plot with shared legend and tighter fit
+ggplot(RGGI_renewables_long, aes(x = Month, y = Generation_MWh, color = Fuel_Type)) +
+  geom_line(size = 1.1) +
+  labs(
+    title = "RGGI Renewable Fuel Generation Over Time",
+    x = "Month",
+    y = "Generation (MWh)",
+    color = "Fuel Type"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = c(
+    "WIND" = "skyblue",
+    "SOLAR" = "gold",
+    "HYDRO" = "navy",
+    "WOOD" = "forestgreen",
+    "LANDFILL_GAS" = "darkorange",
+    "METHANE" = "purple",
+    "REFUSE" = "brown"
+  ))
+```
+
+Summary Statistics for ISO NE Generation
+
+```{r}
+RGGI_ISO_data <- read_csv('/Users/brolinoconnell/Desktop/CSU/Spring2025/Energy Econ/RGGI_ISO_data.csv')
+RGGI_ISO_trimmed <- RGGI_ISO_data[, !(names(RGGI_ISO_data) %in% "Month")]
+RGGI_summary <- RGGI_ISO_trimmed %>%
+  pivot_longer(cols = everything(), names_to = "Generation_Type", values_to = "MWh") %>%
+  group_by(Generation_Type) %>%
+  summarise(Observations = n(), Total_Gen = sum(MWh, na.rm = TRUE), Mean = mean(MWh, na.rm = TRUE),
+            Median = median(MWh, na.rm = TRUE), SD = sd(MWh, na.rm = TRUE), Min = min(MWh, na.rm = TRUE),
+            Max = max(MWh, na.rm = TRUE), .groups = "drop")
+RGGI_summary_formatted <- RGGI_summary %>%
+  mutate(Total_Gen = comma(round(Total_Gen, 0)), Mean = comma(round(Mean, 0)), Median = comma(round(Median, 0)),
+         SD = comma(round(SD, 0)), Min = comma(Min), Max = comma(Max))
+kable(RGGI_summary_formatted, caption = "Table A3: Summary Statistics for RGGI ISO Generation by Type (MWh)",
+      col.names = c("Generation Type", "Obs.", "Total", "Mean", "Median", "SD", "Min", "Max")) %>%
+  kable_styling(full_width = FALSE, position = "center", latex_options = "striped")
+```
+
+\newpage
+\vspace{1cm}
+
+# Appendix B: Robustness Checks
+
+Control Model: ERCOT as a Non-RGGI Counterfactual
+$$ \text{ERCOT Renewable Generation}_t = \beta_0 + \beta_1 \cdot \text{RGGI Permit Price}_t + \beta_2 \cdot \text{Time Index}_t + \epsilon_t $$
+
+
+```{r}
+Final_data_energy$Time_Index <- as.numeric(Final_data_energy$Date)
+Control_model_fixed <- lm(ERCOT_Renewable_Generation ~ RGGI_Permit_Price + Time_Index, data = Final_data_energy)
+modelsummary(Control_model_fixed, output = "latex", title = "Table B1: Control Model", stars = TRUE, fmt = 0,
+             statistic = "std.error", gof_omit = "IC|Log|Adj|F")
+```
+
+```{r}
+par(mar = c(5, 6, 5, 2))
+visreg(Control_model_fixed, "RGGI_Permit_Price", overlay = TRUE, partial = TRUE, rug = TRUE,
+       line.par = list(col = "darkorange3", lwd = 2), fill.par = list(col = "moccasin"),
+       xlab = "RGGI Permit Price ($)", ylab = "ERCOT Renewable Generation (Adjusted for Time)")
+```
+
+\vspace{5cm}
+
+
+Model Assessment
+
+```{r}
+par(mfrow = c(1, 2))
+plot(model_lag, which = 1)
+plot(model_lag, which = 2)
+par(mfrow = c(1, 1))
+```
+
+\vspace{0.5cm}
+
+Additional Model Results
+
+```{r, results='asis'}
+library(broom)
+library(kableExtra)
+
+# Run your model
+model_lag <- lm(RGGI_Renewable_Generation ~ RGGI_Permit_Price_Lag1 + RGGI_Renewable_Share, data = Final_data_energy)
+
+# Tidy the coefficient results
+tidy_model <- tidy(model_lag, conf.int = TRUE)
+
+# Get model fit stats (n, R2, RMSE)
+glance_model <- glance(model_lag)
+
+# Render as LaTeX table
+kable(tidy_model, format = "latex", booktabs = TRUE,
+      caption = "Table B2: Full Regression Results",
+      digits = 2, align = "lcccc") %>%
+  kable_styling(latex_options = c("hold_position", "striped"), position = "center") %>%
+  add_header_above(c(" " = 1, "Lagged Permit Price Model" = 5)) %>%
+  footnote(
+    general = paste0(
+      "Num. Obs = ", glance_model$nobs,
+      "; R² = ", round(glance_model$r.squared, 3),
+      "; RMSE = ", round(glance_model$sigma, 2)
+    ),
+    general_title = "",
+    threeparttable = TRUE
+  )
+```
+
+\newpage
+\vspace{1cm}
+
+# Appendix C: Comparative Model (ERCOT vs RGGI)
+$$
+\mathrm{Renewable\_Share}_i = \beta_0 + \beta_1 \cdot \mathrm{Permit\_Price}_i + \beta_2 \cdot \mathrm{Region}_i + \epsilon_i
+$$
+
+```{r}
+RGGI_df <- Final_data_energy[, c("Date", "RGGI_Renewable_Share", "RGGI_Permit_Price")]
+names(RGGI_df) <- c("Date", "Renewable_Share", "Permit_Price")
+RGGI_df$Region <- "RGGI"
+ERCOT_df <- Final_data_energy[, c("Date", "ERCOT_Renewable_Share")]
+names(ERCOT_df) <- c("Date", "Renewable_Share")
+ERCOT_df$Permit_Price <- 0
+ERCOT_df$Region <- "ERCOT"
+combined_df <- rbind(RGGI_df, ERCOT_df)
+combined_df$Region <- as.factor(combined_df$Region)
+model_simple <- lm(Renewable_Share ~ Region + Permit_Price, data = combined_df)
+emm <- emmeans(model_simple, ~ Region)
+emm_df <- as.data.frame(emm)
+kable(emm_df, digits = 3, caption = "Table C1: Estimated Renewable Share by Region (Adjusted for Permit Price)") %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+```{r}
+ggplot(emm_df, aes(x = Region, y = emmean)) +
+  geom_point(data = combined_df, aes(x = Region, y = Renewable_Share), position = position_jitter(width = 0.1), alpha = 0.4, color = "gray40") +
+  geom_point(size = 4, color = "blue") +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.1, color = "blue", linewidth = 1) +
+  labs(title = "Estimated Renewable Share by Region", subtitle = "Adjusted for RGGI Permit Price", x = "Region", y = "Estimated Renewable Share") +
+  theme_minimal(base_size = 14)
+```
+
+\newpage
+\vspace{1cm}
+
+# Appendix D: References 
+
+# References
+
+Analysis Group. (2011, November 7). The economic impacts of the Regional Greenhouse Gas Initiative on nine Northeast and Mid-Atlantic states. Retrieved February 26, 2025, from https://www.rggi.org/sites/default/files/Uploads/Economic_Analysis/Analysis_Group_RGGI_Report_11-07-11.pdf
+
+Environmental Defense Fund. (2022, June 23). How RGGI cuts carbon and costs. Retrieved February 26, 2025, from https://blogs.edf.org/climate411/2022/06/23/how-rggi-cuts-carbon-and-costs/
+
+ISO New England Inc. (n.d.). Hourly demand reports and resource mix data. Retrieved February 26, 2025, from https://www.iso-ne.com/isoexpress/web/reports/operations/-/tree/demand-reports
+
+Macrotrends. (n.d.). Natural gas prices - Historical chart. Retrieved February 26, 2025, from https://www.macrotrends.net/2478/natural-gas-prices-historical-chart
+
+Massachusetts Government. (n.d.). RGGI auction proceeds & investments. Retrieved February 26, 2025, from https://www.mass.gov/info-details/rggi-auction-proceeds-investments
+
+Regional Greenhouse Gas Initiative, Inc. (2021). 2020 electricity monitoring report. Retrieved February 26, 2025, from https://www.rggi.org/sites/default/files/Uploads/Electricity-Monitoring-Reports/2020_Elec_Monitoring_Report.pdf
+
+Regional Greenhouse Gas Initiative, Inc. (n.d.). Allowance prices and volumes. Retrieved February 26, 2025, from https://www.rggi.org/auctions/auction-results/prices-volumes
+
+U.S. Energy Information Administration. (n.d.). Historical state data. Retrieved February 26, 2025, from https://www.eia.gov/electricity/data/state/
+
+Yan, J. (2021). The impact of climate policy on fossil fuel consumption: Evidence from the Regional Greenhouse Gas Initiative (RGGI). Resource and Energy Economics, 65, 101239. https://www.sciencedirect.com/science/article/pii/S0140988321002395
+

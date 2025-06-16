@@ -1,0 +1,468 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{tabularray}
+\usepackage[normalem]{ulem}
+\usepackage{graphicx}
+\usepackage{rotating}
+\UseTblrLibrary{booktabs}
+\UseTblrLibrary{siunitx}
+\NewTableCommand{\tinytableDefineColor}[3]{\definecolor{#1}{#2}{#3}}
+\newcommand{\tinytableTabularrayUnderline}[1]{\underline{#1}}
+\newcommand{\tinytableTabularrayStrikeout}[1]{\sout{#1}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Pricing Carbon, Powering Change: RGGI's Impact on Renewable Generation vs.~ERCOT},
+  pdfauthor={Brolin O'Connell and Matthew Bowman},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Pricing Carbon, Powering Change: RGGI's Impact on Renewable
+Generation vs.~ERCOT}
+\author{Brolin O'Connell and Matthew Bowman}
+\date{2025-04-02}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\subsection{Abstract}\label{abstract}
+
+This paper investigates the impact of carbon permit pricing under the
+Regional Greenhouse Gas Initiative (RGGI) on renewable energy
+generation, using a multiple linear regression lagged model framework to
+attempt to quantify the relationship between permit price, renewable
+share, and total renewable generation. By incorporating ERCOT;a large,
+deregulated electricity market without carbon pricing---into the
+analysis as our control observation, we assess the extent to which
+carbon pricing alone explains renewable energy deployment. The findings
+confirm that RGGI permit prices are significantly associated with
+increased renewable generation, supporting traditional economic theory
+that externality senesative pricing structures can influence market
+behavior. However, ERCOT is consistently producing higher renewable
+share despite the absence of carbon pricing highlights the importance of
+additional structural factors such as geographic resource advantages,
+market liberalization, and strategic transmission investment. These
+results underscore the need for a more advanced policy strategy to
+accelerate the transition to a low-carbon energy system.
+
+\subsection{Introduction \& Research
+Question}\label{introduction-research-question}
+
+This paper examines the relationship between carbon permit prices in the
+Regional Greenhouse Gas Initiative (RGGI) states and electricity
+generation patterns, while comparing these patterns with the Electric
+Reliability Council of Texas (ERCOT) system as a contemporaneous
+control. As states and regions implement varying approaches to carbon
+pricing and electricity market structure, understanding the resulting
+differences in generation mix, emissions intensity, and system
+reliability becomes increasingly important for policymakers and market
+participants (Environmental Defense Fund, 2022; Yan, 2021).
+
+RGGI, is the first mandatory, market-based cap-and-trade program in the
+United States focused on reducing CO₂ emissions from the power sector
+(RGGI, Inc., 2021). The program has been shown to not only reduce
+overall emissions but also raise revenue for reinvestment in more energy
+efficiency and renewable projects (Analysis Group, 2011; Massachusetts
+Government). Since RGGI spans multiple states and transmission
+organizations, we utilize ISO New England (ISO-NE) generation data as a
+proxy for RGGI renewable generation, this is de to coverage,
+accessibility, and significant overlap with core RGGI member states as
+well as cela formatted data and complete datasets (ISO New England
+Inc.).
+
+By comparing RGGI outcomes with those of ERCOT, this study attempts to
+isolate the potential causal influence of permit pricing on renewable
+energy deployment.
+
+\subsection{Data \& Methodology}\label{data-methodology}
+
+We utilize quarterly RGGI auction clearing prices from September 2011 to
+March 2025, hourly ERCOT generation data by resource type, and detailed
+market data from NE-ISO. These sources provide a full picture of
+electricity generation patterns through time series data and carbon
+permit dynamics. Summary statistics, detailed descriptions, and
+methodological challenges, such as integrating PJM data and accounting
+for confounding variables, are provided in the appendix (see Appendix
+A).
+
+Model Specification We estimate the following multiple linear lagged
+regression model to evaluate the impact of RGGI permit prices on
+renewable generation controlling for time dependant componenets:
+
+\[
+\widehat{\text{RGGI Renewable Generation}}_t = \beta_0 + \beta_1 \cdot \text{Permit Price}_{t-1} + \beta_2 \cdot \text{Renewable Share}_t
+\]
+
+where \(Y_t\) is renewable generation at time \(t\),
+\(\text{Permit Price}_{t-1}\) is the lagged permit price, and
+\(\text{Renewable Share}_t\) is a contemporaneous control variable. The
+lagged permit price controls for delayed effects and reduces random
+correlation due to correlated or cointegrated trends.
+
+\subsection{Results}\label{results}
+
+The model was statistically significant, \(F(2, 54) = 96.87\),
+\(p < 2.2 \times 10^{-16}\), explaining 78.2\% of the variance in
+renewable generation (\(R^2 = 0.782\)). For each one-dollar increase in
+lagged RGGI permit price, renewable generation increased by an estimated
+12,300 MWh (\(\beta = 12{,}300\), \(p = 0.002\)), controlling for
+renewable share. Renewable share was also a strong predictor, with a
+one-unit increase associated with a 5.18 million MWh increase
+(\(\beta = 5{,}176{,}292\), \(p < 2 \times 10^{-16}\)). Full regression
+results are included in Appendix B.
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final_draft_files/figure-latex/unnamed-chunk-3-1.pdf}}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final_draft_files/figure-latex/unnamed-chunk-4-1.pdf}}
+The above figures illustrate the effects more clearly and predictive
+power of Permit price effect on renewable generationa nd share
+respectivlty.
+
+\subsection{Discussion \& Conclusion}\label{discussion-conclusion}
+
+Our statistical analysis confirms that RGGI permit prices are positively
+associated with renewable generation, supporting the claim of
+effectiveness for carbon pricing systems in providing incentive for
+cleaner energy production (Environmental Defense Fund, 2022; Yan, 2021).
+However, ERCOT's higher renewable share despite no carbon
+pricing---suggests that structural factors like infrastructure and
+geolocation are critical drivers for overall generation outside of
+applied pricing matrix creations, like a cap and trade. (Analysis Group,
+2011; see Appendix C for detailed comparison). A control model using
+ERCOT data found no significant relationship between RGGI permit prices
+and ERCOT renewable generation, validating our main findings (see
+Appendix B). These results indicate that while carbon pricing is overal
+effective, a more sophisticated approach combining pricing with
+institutional reforms and strategic investment is essential for
+de-carbonization. Pricing alone may never reach the desired effect
+unless compounded over a extended period of time, therefore to speed up
+the rate of de-carbonization more must be applied rahther than jsut
+eoncomcis pricing theory methods to ensure the growth rate of clean
+energy is exponentiated enough to meet goals.
+
+\newpage
+\vspace{1cm}
+
+\subsection{Appendix}\label{appendix}
+
+\section{Appendix A: Data Details and Summary
+Statistics}\label{appendix-a-data-details-and-summary-statistics}
+
+Data Sources and Methodological Challenges RGGI: Quarterly auction
+clearing prices from September 2011 to March 2025.
+
+ERCOT: Hourly generation data by resource type.
+
+NE-ISO: Detailed market data. Challenges included integrating PJM data
+due to partial RGGI overlap causing a concern fir over fitting in a
+model with no coross validation etc.. There also is an issue controlling
+for confounders like gas prices and weather, addressed via statistical
+methods and AI-assisted data processing. Important to note AI was
+\textbf{only} used to clean data for NA values and repetitions and was
+also used to enhance the visuals of graphs, not for any idea generation
+or methodological decisions like choice of statstical tools/models in
+this paper.
+
+Summary Statistics for RGGI Clearing Prices
+
+\begin{longtable}[t]{ll}
+\caption{\label{tab:unnamed-chunk-5}Table A1: Summary Statistics for RGGI Clearing Prices (USD)}\\
+\toprule
+Statistic & Value\\
+\midrule
+Min. & \$1.00\\
+1st Qu. & \$3.80\\
+Median & \$5.35\\
+Mean & \$7.47\\
+3rd Qu. & \$10.90\\
+\addlinespace
+Max. & \$25.75\\
+\bottomrule
+\end{longtable}
+
+Plot of Permit Prices Over Time
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final_draft_files/figure-latex/unnamed-chunk-6-1.pdf}}
+
+Summary Statistics for ERCOT Generation
+
+\begin{longtable}[t]{lrlllllll}
+\caption{\label{tab:unnamed-chunk-7}Table A2: Summary Statistics for ERCOT Generation by Source}\\
+\toprule
+Source & Count & Mean (GWh) & SD & Min & Q1 & Median & Q3 & Max\\
+\midrule
+\cellcolor{gray!10}{Biomass} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{35} & \cellcolor{gray!10}{21} & \cellcolor{gray!10}{6} & \cellcolor{gray!10}{18.8} & \cellcolor{gray!10}{25.5} & \cellcolor{gray!10}{58.2} & \cellcolor{gray!10}{75}\\
+Coal & 60 & 5,582 & 1,191 & 2,917 & 4,870.2 & 5,529.0 & 6,416.8 & 8,192\\
+\cellcolor{gray!10}{Gas} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{2,573} & \cellcolor{gray!10}{1,416} & \cellcolor{gray!10}{673} & \cellcolor{gray!10}{1,394.5} & \cellcolor{gray!10}{2,320.0} & \cellcolor{gray!10}{3,487.0} & \cellcolor{gray!10}{7,195}\\
+Gas-CC & 60 & 12,860 & 3,476 & 7,023 & 10,199.8 & 12,005.5 & 15,733.2 & 20,196\\
+\cellcolor{gray!10}{Hydro} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{38} & \cellcolor{gray!10}{24} & \cellcolor{gray!10}{8} & \cellcolor{gray!10}{17.0} & \cellcolor{gray!10}{31.0} & \cellcolor{gray!10}{54.5} & \cellcolor{gray!10}{96}\\
+\addlinespace
+Nuclear & 60 & 3,381 & 378 & 2,178 & 3,167.8 & 3,444.5 & 3,696.2 & 3,803\\
+\cellcolor{gray!10}{Other} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{63} & \cellcolor{gray!10}{79} & \cellcolor{gray!10}{-3} & \cellcolor{gray!10}{0.0} & \cellcolor{gray!10}{51.0} & \cellcolor{gray!10}{78.5} & \cellcolor{gray!10}{333}\\
+Solar & 60 & 2,155 & 1,350 & 361 & 1,077.5 & 1,841.0 & 3,004.2 & 5,827\\
+\cellcolor{gray!10}{WSL} & \cellcolor{gray!10}{36} & \cellcolor{gray!10}{-125} & \cellcolor{gray!10}{95} & \cellcolor{gray!10}{-407} & \cellcolor{gray!10}{-161.5} & \cellcolor{gray!10}{-83.0} & \cellcolor{gray!10}{-63.8} & \cellcolor{gray!10}{-33}\\
+Wind & 60 & 8,492 & 1,653 & 5,029 & 7,375.0 & 8,421.0 & 9,616.0 & 12,454\\
+\bottomrule
+\end{longtable}
+
+Plot for ERCOT Generation by Fuel Type
+
+\begin{figure}
+
+{\centering \includegraphics{Final_draft_files/figure-latex/unnamed-chunk-8-1} 
+
+}
+
+\caption{Figure A1: ERCOT Generation by Fuel Type Over Time}\label{fig:unnamed-chunk-8}
+\end{figure}
+
+Plot for NE ISO Generation by type
+
+\begin{figure}
+
+{\centering \includegraphics{Final_draft_files/figure-latex/unnamed-chunk-9-1} 
+
+}
+
+\caption{Figure A2: RGGI Renewable Fuel Generation Over Time}\label{fig:unnamed-chunk-9}
+\end{figure}
+
+Summary Statistics for ISO NE Generation
+
+\begin{longtable}[t]{lrllllll}
+\caption{\label{tab:unnamed-chunk-10}Table A3: Summary Statistics for RGGI ISO Generation by Type (MWh)}\\
+\toprule
+Generation Type & Obs. & Total & Mean & Median & SD & Min & Max\\
+\midrule
+\cellcolor{gray!10}{COAL} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{1,438,965} & \cellcolor{gray!10}{23,983} & \cellcolor{gray!10}{5,984} & \cellcolor{gray!10}{46,617} & \cellcolor{gray!10}{14.8} & \cellcolor{gray!10}{253,853}\\
+GAS & 60 & 273,444,500 & 4,557,408 & 4,365,388 & 1,045,874 & 2,752,009.5 & 6,917,898\\
+\cellcolor{gray!10}{HYDRO} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{40,679,356} & \cellcolor{gray!10}{677,989} & \cellcolor{gray!10}{687,954} & \cellcolor{gray!10}{199,776} & \cellcolor{gray!10}{253,753.8} & \cellcolor{gray!10}{998,469}\\
+LANDFILL GAS & 60 & 2,141,025 & 35,684 & 36,813 & 5,161 & 13,973.0 & 41,195\\
+\cellcolor{gray!10}{METHANE} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{193,478} & \cellcolor{gray!10}{3,225} & \cellcolor{gray!10}{3,265} & \cellcolor{gray!10}{374} & \cellcolor{gray!10}{2,356.5} & \cellcolor{gray!10}{3,985}\\
+\addlinespace
+NUCLEAR & 60 & 129,788,422 & 2,163,140 & 2,343,504 & 437,543 & 923,854.3 & 2,500,501\\
+\cellcolor{gray!10}{OIL} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{2,864,685} & \cellcolor{gray!10}{47,745} & \cellcolor{gray!10}{7,691} & \cellcolor{gray!10}{148,417} & \cellcolor{gray!10}{447.8} & \cellcolor{gray!10}{1,030,184}\\
+OTHER & 60 & 800,853 & 13,348 & 5,795 & 14,015 & 1,847.6 & 46,205\\
+\cellcolor{gray!10}{PRD} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{111,037} & \cellcolor{gray!10}{1,851} & \cellcolor{gray!10}{1,292} & \cellcolor{gray!10}{2,067} & \cellcolor{gray!10}{2.7} & \cellcolor{gray!10}{13,261}\\
+REFUSE & 60 & 14,142,953 & 235,716 & 232,411 & 17,605 & 193,023.5 & 270,450\\
+\addlinespace
+\cellcolor{gray!10}{SOLAR} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{16,767,151} & \cellcolor{gray!10}{279,453} & \cellcolor{gray!10}{268,483} & \cellcolor{gray!10}{124,846} & \cellcolor{gray!10}{79,797.8} & \cellcolor{gray!10}{537,986}\\
+STEAM & 60 & 0 & 0 & 0 & 0 & 0.0 & 0\\
+\cellcolor{gray!10}{TOTAL} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{510,478,353} & \cellcolor{gray!10}{8,507,973} & \cellcolor{gray!10}{8,359,116} & \cellcolor{gray!10}{1,113,091} & \cellcolor{gray!10}{6,210,305.7} & \cellcolor{gray!10}{11,350,005}\\
+WIND & 60 & 35,840,387 & 597,340 & 595,021 & 177,032 & 264,634.0 & 940,363\\
+\cellcolor{gray!10}{WOOD} & \cellcolor{gray!10}{60} & \cellcolor{gray!10}{10,186,124} & \cellcolor{gray!10}{169,769} & \cellcolor{gray!10}{168,921} & \cellcolor{gray!10}{40,977} & \cellcolor{gray!10}{53,202.0} & \cellcolor{gray!10}{249,942}\\
+\bottomrule
+\end{longtable}
+
+\newpage
+\vspace{1cm}
+
+\section{Appendix B: Robustness
+Checks}\label{appendix-b-robustness-checks}
+
+Control Model: ERCOT as a Non-RGGI Counterfactual
+\[ \text{ERCOT Renewable Generation}_t = \beta_0 + \beta_1 \cdot \text{RGGI Permit Price}_t + \beta_2 \cdot \text{Time Index}_t + \epsilon_t \]
+
+\begin{table}
+\centering
+\begin{talltblr}[         %% tabularray outer open
+caption={Table B1: Control Model},
+note{}={+ p \num{< 0.1}, * p \num{< 0.05}, ** p \num{< 0.01}, *** p \num{< 0.001}},
+]                     %% tabularray outer close
+{                     %% tabularray inner open
+colspec={Q[]Q[]},
+column{2}={}{halign=c,},
+column{1}={}{halign=l,},
+hline{8}={1,2}{solid, black, 0.05em},
+}                     %% tabularray inner close
+\toprule
+& (1) \\ \midrule %% TinyTableHeader
+(Intercept) & \num{-42885}* \\
+& (\num{17089}) \\
+RGGI\_Permit\_Price & \num{68} \\
+& (\num{95}) \\
+Time\_Index & \num{3}** \\
+& (\num{1}) \\
+Num.Obs. & \num{58} \\
+R2 & \num{0.569} \\
+RMSE & \num{1497.77} \\
+\bottomrule
+\end{talltblr}
+\end{table}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final_draft_files/figure-latex/unnamed-chunk-12-1.pdf}}
+
+\vspace{5cm}
+
+Model Assessment
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final_draft_files/figure-latex/unnamed-chunk-13-1.pdf}}
+
+\vspace{0.5cm}
+
+Additional Model Results
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:unnamed-chunk-14}Table B2: Full Regression Results}
+\centering
+\begin{threeparttable}
+\begin{tabular}[t]{lcccclc}
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{5}{c}{Lagged Permit Price Model} \\
+\cmidrule(l{3pt}r{3pt}){2-6}
+term & estimate & std.error & statistic & p.value & conf.low & conf.high\\
+\midrule
+\cellcolor{gray!10}{(Intercept)} & \cellcolor{gray!10}{516847.08} & \cellcolor{gray!10}{96933.08} & \cellcolor{gray!10}{5.33} & \cellcolor{gray!10}{0} & \cellcolor{gray!10}{322507.96} & \cellcolor{gray!10}{711186.19}\\
+RGGI\_Permit\_Price\_Lag1 & 12299.81 & 3795.51 & 3.24 & 0 & 4690.27 & 19909.36\\
+\cellcolor{gray!10}{RGGI\_Renewable\_Share} & \cellcolor{gray!10}{5176291.87} & \cellcolor{gray!10}{376610.64} & \cellcolor{gray!10}{13.74} & \cellcolor{gray!10}{0} & \cellcolor{gray!10}{4421233.01} & \cellcolor{gray!10}{5931350.74}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\item Num. Obs = 57; R² = 0.782; RMSE = 143202.21
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\newpage
+\vspace{1cm}
+
+\section{Appendix C: Comparative Model (ERCOT vs
+RGGI)}\label{appendix-c-comparative-model-ercot-vs-rggi}
+
+\[
+\mathrm{Renewable\_Share}_i = \beta_0 + \beta_1 \cdot \mathrm{Permit\_Price}_i + \beta_2 \cdot \mathrm{Region}_i + \epsilon_i
+\]
+
+\begin{longtable}[t]{lrrrrr}
+\caption{\label{tab:unnamed-chunk-15}Table C1: Estimated Renewable Share by Region (Adjusted for Permit Price)}\\
+\toprule
+Region & emmean & SE & df & lower.CL & upper.CL\\
+\midrule
+ERCOT & 0.303 & 0.013 & 113 & 0.278 & 0.329\\
+RGGI & 0.220 & 0.013 & 113 & 0.194 & 0.246\\
+\bottomrule
+\end{longtable}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final_draft_files/figure-latex/unnamed-chunk-16-1.pdf}}
+
+\newpage
+\vspace{1cm}
+
+\section{Appendix D: References}\label{appendix-d-references}
+
+\section{References}\label{references}
+
+Analysis Group. (2011, November 7). The economic impacts of the Regional
+Greenhouse Gas Initiative on nine Northeast and Mid-Atlantic states.
+Retrieved February 26, 2025, from
+\url{https://www.rggi.org/sites/default/files/Uploads/Economic_Analysis/Analysis_Group_RGGI_Report_11-07-11.pdf}
+
+Environmental Defense Fund. (2022, June 23). How RGGI cuts carbon and
+costs. Retrieved February 26, 2025, from
+\url{https://blogs.edf.org/climate411/2022/06/23/how-rggi-cuts-carbon-and-costs/}
+
+ISO New England Inc.~(n.d.). Hourly demand reports and resource mix
+data. Retrieved February 26, 2025, from
+\url{https://www.iso-ne.com/isoexpress/web/reports/operations/-/tree/demand-reports}
+
+Macrotrends. (n.d.). Natural gas prices - Historical chart. Retrieved
+February 26, 2025, from
+\url{https://www.macrotrends.net/2478/natural-gas-prices-historical-chart}
+
+Massachusetts Government. (n.d.). RGGI auction proceeds \& investments.
+Retrieved February 26, 2025, from
+\url{https://www.mass.gov/info-details/rggi-auction-proceeds-investments}
+
+Regional Greenhouse Gas Initiative, Inc.~(2021). 2020 electricity
+monitoring report. Retrieved February 26, 2025, from
+\url{https://www.rggi.org/sites/default/files/Uploads/Electricity-Monitoring-Reports/2020_Elec_Monitoring_Report.pdf}
+
+Regional Greenhouse Gas Initiative, Inc.~(n.d.). Allowance prices and
+volumes. Retrieved February 26, 2025, from
+\url{https://www.rggi.org/auctions/auction-results/prices-volumes}
+
+U.S. Energy Information Administration. (n.d.). Historical state data.
+Retrieved February 26, 2025, from
+\url{https://www.eia.gov/electricity/data/state/}
+
+Yan, J. (2021). The impact of climate policy on fossil fuel consumption:
+Evidence from the Regional Greenhouse Gas Initiative (RGGI). Resource
+and Energy Economics, 65, 101239.
+\url{https://www.sciencedirect.com/science/article/pii/S0140988321002395}
+
+\end{document}
